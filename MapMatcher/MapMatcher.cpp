@@ -1,8 +1,9 @@
 #include <stdio.h>
-#include <vector>
+//#include <vector>
 #include <iostream>
 
 #include "CSVReader.h"
+#include "ProbeLinkMatcher.h"
 
 using namespace std;
 
@@ -13,13 +14,18 @@ int main() {
 //#pragma omp parallel
 //  std::cout << "Lol" << std::endl;
 //
-  probe_data_reader->PopulateReadBuffer();
-  probe_data_reader->ParseToProbeRowBuffer();
 
   link_data_reader->PopulateReadBuffer(); // Takes 3 mins with full link data file
   link_data_reader->ParseToLinkRowBuffer();
 
-  
+  probe_data_reader->PopulateReadBuffer();
+  probe_data_reader->ParseToProbeRowBuffer();
+
+
+  ProbeLinkMatcher *probe_matcher = new ProbeLinkMatcher(link_data_reader->link_row_buffer,
+                                                         probe_data_reader->probe_row_buffer);
+
+  probe_matcher->MatchProbes();
 
   int k = 0;
 }

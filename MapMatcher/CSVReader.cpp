@@ -38,7 +38,7 @@ void CSVReader::ReadNextRow() {
 }
 
 LinkRow CSVReader::row_string_buff2LinkRow(std::vector<std::string>
-                                           row_string_set) {
+                                           &row_string_set) {
   LinkRow row;
   row.linkPVID = stoi(row_string_set[0]);
   row.refNodeID = stoi(row_string_set[1]);
@@ -101,7 +101,7 @@ LinkRow CSVReader::row_string_buff2LinkRow(std::vector<std::string>
 }
 
 ProbeRow CSVReader::row_string_buff2ProbeRow(std::vector<std::string>
-                                  row_string_set) {
+                                             &row_string_set) {
   ProbeRow row;
   tm probe_time;
   time_t timestamp;

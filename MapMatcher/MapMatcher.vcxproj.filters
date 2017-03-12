@@ -35,6 +35,9 @@
     <ClInclude Include="ProbeLinkMatcher.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="MapMatcherCommonHeader.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="Partition6467LinkData.csv" />

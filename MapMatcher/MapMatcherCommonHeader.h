@@ -58,6 +58,12 @@ struct ProbeLinkMatchRow {
   float distFromLink;
 };
 
+struct ProbeLinkTriangle {
+  std::pair<float, float> L0; //Reference node
+  std::pair<float, float> L1; //Non-reference node
+  std::pair<float, float> P; //Probe Point
+};
+
 //void split_(const std::string &s, char delim,
 //            std::vector<std::string> &elems) {
 //  std::stringstream ss;

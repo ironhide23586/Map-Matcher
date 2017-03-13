@@ -46,7 +46,7 @@ std::pair<ProbeLinkMatchRow,
   else {
     start_idx = prev_match_link_idx - half_window;
     end_idx = prev_match_link_idx + half_window;
-    start_idx = start_idx < 0 ? 0 : start_idx;
+    start_idx = start_idx < 0 ? 1 : start_idx;
     end_idx = end_idx >= link_row_dataset.size() ? link_row_dataset.size()
       : end_idx;
   }
@@ -69,43 +69,67 @@ std::pair<ProbeLinkMatchRow,
 
 char ProbeLinkMatcher::ProbeDirectionInLink(ProbeRow &probe_sample,
                                             LinkRow &link) {
-  char dir;
+  ProbeLinkTriangle probe_link_triangle = ExtractTrianglePoints(probe_sample,
+                                                                link);
+  std::pair<float, float> L0_P_vector = GetPoint2PointVector(probe_link_triangle.L0,
+                                                             probe_link_triangle.P);
+  float L0_P_vector_angle = std::acosf(VectorCosine(L0_P_vector,
+                                                     std::make_pair(0.0f,
+                                                                    1.0f)));
+  L0_P_vector_angle /= (M_PI / 180.0f);
+  L0_P_vector_angle = L0_P_vector_angle > 180
+    ? (L0_P_vector_angle - 360) : L0_P_vector_angle; //FIX THIS
+  float point_heading_angle = std::abs(probe_sample.heading 
+                                       - L0_P_vector_angle);
+  char direction = point_heading_angle > 90 ? 'T' : 'F';
+  return direction;
+}
 
-  return dir;
+std::pair<float, float> ProbeLinkMatcher::GetPoint2PointVector(
+  std::pair<float, float> &p0, std::pair<float, float> &p1) {
+  return std::make_pair(p1.first - p0.first, p1.second - p0.second);
+}
+
+ProbeLinkTriangle ProbeLinkMatcher::ExtractTrianglePoints(ProbeRow &probe_sample,
+                                                          LinkRow &link) {
+  ProbeLinkTriangle triangle;
+  triangle.L0 = std::make_pair(link.shapeInfo[0][0],
+                               link.shapeInfo[0][1]);
+  triangle.L1 = std::make_pair(link.shapeInfo.back()[0],
+                               link.shapeInfo.back()[1]);
+  triangle.P = std::make_pair(probe_sample.latitude,
+                              probe_sample.longitude);
+  return triangle;
 }
 
 float ProbeLinkMatcher::deg2rad(float deg) {
   return deg * M_PI / 180;
 }
 
+float ProbeLinkMatcher::VectorCosine(std::pair<float, float> &v0,
+                                     std::pair<float, float> &v1) {
+  float numerator = v0.first * v1.first + v0.second * v1.second;
+  float denominator = sqrtf(powf(v0.first, 2) + powf(v0.second, 2))
+    * sqrtf(powf(v1.first, 2) + powf(v1.second, 2));
+  return numerator / denominator;
+}
+
 float ProbeLinkMatcher::Probe2LinkDistance(ProbeRow &probe_sample,
                                            LinkRow &link) {
-  float dist = 0;
-  float D = link.length;
-  std::pair<float, float> L0 = std::make_pair(link.shapeInfo[0][0],
-                                              link.shapeInfo[0][1]);
-  std::pair<float, float> L1 = std::make_pair(link.shapeInfo.back()[0],
-                                              link.shapeInfo.back()[1]);
-  std::pair<float, float> P = std::make_pair(probe_sample.latitude,
-                                             probe_sample.longitude);
-  float L = HaversineDistance(P, L0);
-  std::pair<float, float> L0_L1_vector = std::make_pair(L1.first - L0.first,
-                                                        L1.second - L0.second);
-  std::pair<float, float> L0_P_vector = std::make_pair(P.first - L0.first,
-                                                       P.second - L0.second);
-  float numerator = L0_L1_vector.first * L0_P_vector.first
-    + L0_L1_vector.second * L0_P_vector.second;
-  float denominator = sqrt(powf(L0_L1_vector.first, 2) + powf(L0_L1_vector.second, 2))
-    * sqrt(powf(L0_P_vector.first, 2) + powf(L0_P_vector.second, 2));
-  
-  float cos_theta = numerator / denominator;
+  ProbeLinkTriangle probe_link_triangle = ExtractTrianglePoints(probe_sample,
+                                                                link);
+  float L = HaversineDistance(probe_link_triangle.P, probe_link_triangle.L0);
+  std::pair<float, float> L0_L1_vector
+    = GetPoint2PointVector(probe_link_triangle.L0, probe_link_triangle.L1);
+  std::pair<float, float> L0_P_vector
+    = GetPoint2PointVector(probe_link_triangle.L0, probe_link_triangle.P);
+  float cos_theta = VectorCosine(L0_L1_vector, L0_P_vector);
   float sin_sqr_theta = 1.0f - powf(cos_theta, 2);
   float L_cos_theta = L * cos_theta;
-
-  dist = sqrtf(L * L * sin_sqr_theta
-               + powf((std::min(abs(std::min(L_cos_theta, D)),
-                           abs(std::max(0.0f, L_cos_theta))) 
-                       - L_cos_theta), 2));
+  float dist = sqrtf(L * L * sin_sqr_theta
+                     + powf((std::min(abs(std::min(L_cos_theta, link.length)),
+                                      abs(std::max(0.0f, L_cos_theta)))
+                             - L_cos_theta), 2));
   return dist;
 }
 

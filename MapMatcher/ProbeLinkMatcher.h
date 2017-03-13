@@ -19,5 +19,10 @@ public:
   char ProbeDirectionInLink(ProbeRow &probe_sample, LinkRow &link);
   float HaversineDistance(std::pair<float, float> &p0,
                           std::pair<float, float> &p1);
+  std::pair<float, float> GetPoint2PointVector(std::pair<float, float> &p0,
+                                               std::pair<float, float> &p1);
+  float VectorCosine(std::pair<float, float> &v0, std::pair<float, float> &v1);
+  ProbeLinkTriangle ExtractTrianglePoints(ProbeRow &probe_sample,
+                                          LinkRow &link);
 };
 

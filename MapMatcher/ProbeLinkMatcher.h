@@ -11,9 +11,12 @@ public:
 
   void MatchProbes();
 
-  ProbeLinkMatchRow MatchProbe_CPU(ProbeRow &probe_row);
+  std::pair<ProbeLinkMatchRow, int> MatchProbe_CPU(ProbeRow &probe_row,
+                                                   int prev_match_link_idx = -1,
+                                                   int link_row_window = 100);
   float static deg2rad(float deg);
   float Probe2LinkDistance(ProbeRow &probe_sample, LinkRow &link);
+  char ProbeDirectionInLink(ProbeRow &probe_sample, LinkRow &link);
   float HaversineDistance(std::pair<float, float> &p0,
                           std::pair<float, float> &p1);
 };

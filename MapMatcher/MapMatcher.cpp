@@ -18,6 +18,11 @@ int main() {
   link_data_reader->PopulateReadBuffer(); // Takes 3 mins with full link data file
   link_data_reader->ParseToLinkRowBuffer();
 
+  //for (auto link : link_data_reader->link_row_buffer) {
+  //  std::cout << link.shapeInfo[0][0] << ", " << link.shapeInfo[0][1] << std::endl;
+  //  std::cout << link.shapeInfo.back()[0] << ", " << link.shapeInfo.back()[1] << std::endl;
+  //}
+
   probe_data_reader->PopulateReadBuffer();
   probe_data_reader->ParseToProbeRowBuffer();
 

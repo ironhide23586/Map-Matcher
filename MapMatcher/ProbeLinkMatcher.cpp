@@ -10,14 +10,21 @@ ProbeLinkMatcher::ProbeLinkMatcher(std::vector<LinkRow> &link_row_dataset_arg,
 void ProbeLinkMatcher::MatchProbes() {
   matched_probe_row_buffer.clear();
   matched_probe_row_buffer.resize(probe_row_buffer.size());
-  for (int i = 0; i < probe_row_buffer.size(); i++) {
-    matched_probe_row_buffer[i] = MatchProbe_CPU(probe_row_buffer[i]);
+  std::pair<ProbeLinkMatchRow, int> match_result;
+  match_result = MatchProbe_CPU(probe_row_buffer[0]);
+  matched_probe_row_buffer[0] = match_result.first;
+  for (int i = 1; i < probe_row_buffer.size(); i++) {
+    match_result = MatchProbe_CPU(probe_row_buffer[i], match_result.second);
+    matched_probe_row_buffer[i] = match_result.first;
   }
 }
 
-ProbeLinkMatchRow ProbeLinkMatcher::MatchProbe_CPU(ProbeRow &probe_row) {
+std::pair<ProbeLinkMatchRow,
+          int> ProbeLinkMatcher::MatchProbe_CPU(ProbeRow &probe_row,
+                                                int prev_match_link_idx,
+                                                int link_row_window) {
   ProbeLinkMatchRow probe_row_matched;
-  
+
   probe_row_matched.sampleID = probe_row.sampleID;
   probe_row_matched.dateTime = probe_row.dateTime;
   probe_row_matched.sourceCode = probe_row.sourceCode;
@@ -26,11 +33,25 @@ ProbeLinkMatchRow ProbeLinkMatcher::MatchProbe_CPU(ProbeRow &probe_row) {
   probe_row_matched.altitude = probe_row.altitude;
   probe_row_matched.speed = probe_row.speed;
   probe_row_matched.heading = probe_row.heading;
-  
+
   int closest_link_idx = 0;
   float min_dist = Probe2LinkDistance(probe_row, link_row_dataset[0]);
   float curr_dist;
-  for (int i = 1; i < link_row_dataset.size(); i++) {
+  int start_idx, end_idx, half_window = link_row_window / 2;
+
+  if (prev_match_link_idx == -1) {
+    start_idx = 1;
+    end_idx = link_row_dataset.size();
+  }
+  else {
+    start_idx = prev_match_link_idx - half_window;
+    end_idx = prev_match_link_idx + half_window;
+    start_idx = start_idx < 0 ? 0 : start_idx;
+    end_idx = end_idx >= link_row_dataset.size() ? link_row_dataset.size()
+      : end_idx;
+  }
+
+  for (int i = start_idx; i < end_idx; i++) {
     curr_dist = Probe2LinkDistance(probe_row, link_row_dataset[i]);
     if (curr_dist < min_dist) {
       min_dist = curr_dist;
@@ -39,9 +60,18 @@ ProbeLinkMatchRow ProbeLinkMatcher::MatchProbe_CPU(ProbeRow &probe_row) {
   }
 
   probe_row_matched.linkPVID = link_row_dataset[closest_link_idx].linkPVID;
-  //probe_row_matched.
+  probe_row_matched.direction = ProbeDirectionInLink(probe_row,
+                                                     link_row_dataset
+                                                     [closest_link_idx]);
 
-  return probe_row_matched;
+  return std::make_pair(probe_row_matched, closest_link_idx);
+}
+
+char ProbeLinkMatcher::ProbeDirectionInLink(ProbeRow &probe_sample,
+                                            LinkRow &link) {
+  char dir;
+
+  return dir;
 }
 
 float ProbeLinkMatcher::deg2rad(float deg) {
@@ -87,5 +117,5 @@ float ProbeLinkMatcher::HaversineDistance(std::pair<float, float> &p0,
     + cosf(lat1_rad) * cosf(lat0_rad)
     * pow(sinf((long1_rad - long0_rad) / 2.0f), 2);
   float c = 2 * atan2f(sqrtf(a), sqrtf(1.0f - a));
-  return 6371000.0f * c;
+  return 6371000.0f * c; //Earth's radius in metres
 }

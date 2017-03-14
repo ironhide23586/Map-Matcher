@@ -52,9 +52,9 @@ struct ProbeLinkMatchRow {
   char sourceCode;
   float latitude;
   float longitude;
-  float altitude;
-  float speed;
-  float heading;
+  float altitude; // int
+  float speed; // int
+  float heading; // int
   unsigned int linkPVID;
   char direction;
   float distFromRef;

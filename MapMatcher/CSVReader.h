@@ -14,6 +14,7 @@ public:
   int global_row_idx;
   int local_row_idx;
   int row_buffer_size;
+  bool end_reached;
 
   CSVReader(const char *filename_arg, int buff_size = 5);
   
@@ -26,7 +27,7 @@ public:
 private:
   void static CSVReader::split_(const std::string &s, char delim,
                                 std::vector<std::string> &elems);
-  void ReadNextRow();
+  bool ReadNextRow();
   LinkRow row_string_buff2LinkRow(std::vector<std::string>
                                   &row_string_set);
   ProbeRow row_string_buff2ProbeRow(std::vector<std::string>

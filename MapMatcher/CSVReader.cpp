@@ -18,9 +18,10 @@ CSVReader::CSVReader(const char *filename_arg, int buff_size) {
   global_row_idx = 0;
   local_row_idx = 0;
   row_buffer_size = buff_size;
+  end_reached = false;
 }
 
-void CSVReader::ReadNextRow() {
+bool CSVReader::ReadNextRow() {
   if (csv_fstream.is_open()) {
     if (std::getline(csv_fstream, read_line)) {
       if (local_row_idx >= row_buffer_size) {
@@ -30,11 +31,14 @@ void CSVReader::ReadNextRow() {
       row_string_buffer[local_row_idx] = split(read_line, ',');
       local_row_idx++;
       global_row_idx++;
+      return true;
     }
     else {
       csv_fstream.close();
+      return false;
     }
   }
+  return false;
 }
 
 LinkRow CSVReader::row_string_buff2LinkRow(std::vector<std::string>
@@ -108,6 +112,7 @@ ProbeRow CSVReader::row_string_buff2ProbeRow(std::vector<std::string>
   row.sampleID = stoi(row_string_set[0]);
   if (strptime(row_string_set[1].c_str(), "%m/%d/%Y %r", &probe_time) != NULL)
     row.dateTime = mktime(&probe_time);
+  row.dateTime_str.assign(row_string_set[1]);
   row.sourceCode = (char)stoi(row_string_set[2]);
   row.latitude = stod(row_string_set[3]);
   row.longitude = stod(row_string_set[4]);
@@ -123,24 +128,23 @@ void CSVReader::PopulateReadBuffer() {
   raw_row_buffer.resize(row_buffer_size);
   row_string_buffer.resize(row_buffer_size);
   for (int i = 0; i < row_buffer_size; i++) {
-    //auto now1 = std::chrono::high_resolution_clock::now();
-    ReadNextRow();
-    //auto now2 = std::chrono::high_resolution_clock::now();
-    //float dur = (float)std::chrono::duration_cast<std::chrono::nanoseconds>(now2 - now1).count() * 1e-9f;
+    if (!ReadNextRow()) {
+      row_buffer_size = i;
+      raw_row_buffer.resize(row_buffer_size);
+      row_string_buffer.resize(row_buffer_size);
+      end_reached = true;
+      break;
+    }
   }
 }
 
 void CSVReader::ParseToLinkRowBuffer() {
   link_row_buffer.clear();
   link_row_buffer.resize(row_buffer_size);
-  //float dur;
-  //auto now1 = std::chrono::high_resolution_clock::now();
 #pragma omp parallel
   for (int i = 0; i < row_buffer_size; i++) {
     link_row_buffer[i] = row_string_buff2LinkRow(row_string_buffer[i]);
   }
-  //auto now2 = std::chrono::high_resolution_clock::now();
-  //dur = (float)std::chrono::duration_cast<std::chrono::nanoseconds>(now2 - now1).count() * 1e-9f;
 }
 
 void CSVReader::ParseToProbeRowBuffer() {

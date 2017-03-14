@@ -1,5 +1,4 @@
 #include <stdio.h>
-//#include <vector>
 #include <iostream>
 
 #include "CSVReader.h"
@@ -9,28 +8,18 @@ using namespace std;
 
 int main() {
   CSVReader *link_data_reader = new CSVReader("Partition6467LinkData.csv", 1000); //200089 rows
-  CSVReader *probe_data_reader = new CSVReader("Partition6467ProbePoints.csv", 500);
-  
-//#pragma omp parallel
-//  std::cout << "Lol" << std::endl;
-//
+  //CSVReader *probe_data_reader = new CSVReader("Partition6467ProbePoints.csv", 500);
+  CSVReader *probe_data_reader = new CSVReader("probes_chunk.csv", 10);
+  ProbeLinkMatcher *probe_matcher = new ProbeLinkMatcher();
 
   link_data_reader->PopulateReadBuffer(); // Takes 3 mins with full link data file
   link_data_reader->ParseToLinkRowBuffer();
 
-  //for (auto link : link_data_reader->link_row_buffer) {
-  //  std::cout << link.shapeInfo[0][0] << ", " << link.shapeInfo[0][1] << std::endl;
-  //  std::cout << link.shapeInfo.back()[0] << ", " << link.shapeInfo.back()[1] << std::endl;
-  //}
-
-  probe_data_reader->PopulateReadBuffer();
-  probe_data_reader->ParseToProbeRowBuffer();
-
-
-  ProbeLinkMatcher *probe_matcher = new ProbeLinkMatcher(link_data_reader->link_row_buffer,
-                                                         probe_data_reader->probe_row_buffer);
-
-  probe_matcher->MatchProbes();
-
-  int k = 0;
+  while (!probe_data_reader->end_reached) {
+    probe_data_reader->PopulateReadBuffer();
+    probe_data_reader->ParseToProbeRowBuffer();
+    probe_matcher->MatchProbes(link_data_reader->link_row_buffer,
+                               probe_data_reader->probe_row_buffer);
+    int a = 90;
+  }
 }

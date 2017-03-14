@@ -36,6 +36,7 @@ struct LinkRow {
 struct ProbeRow {
   unsigned int sampleID;
   float dateTime; //Convert incoming date string to timestamp
+  std::string dateTime_str;
   char sourceCode;
   float latitude;
   float longitude;
@@ -47,6 +48,7 @@ struct ProbeRow {
 struct ProbeLinkMatchRow {
   unsigned int sampleID;
   float dateTime; //Convert incoming date string to timestamp
+  std::string dateTime_str;
   char sourceCode;
   float latitude;
   float longitude;
@@ -64,20 +66,3 @@ struct ProbeLinkTriangle {
   std::pair<float, float> L1; //Non-reference node
   std::pair<float, float> P; //Probe Point
 };
-
-//void split_(const std::string &s, char delim,
-//            std::vector<std::string> &elems) {
-//  std::stringstream ss;
-//  ss.str(s);
-//  std::string item;
-//  while (std::getline(ss, item, delim)) {
-//    elems.push_back(item);
-//  }
-//}
-//
-//std::vector<std::string> split(const std::string &s,
-//                               char delim) {
-//  std::vector<std::string> elems;
-//  split_(s, delim, elems);
-//  return elems;
-//}

@@ -1,13 +1,13 @@
 #include "ProbeLinkMatcher.h"
 
+ProbeLinkMatcher::ProbeLinkMatcher() {
+  
+}
 
-ProbeLinkMatcher::ProbeLinkMatcher(std::vector<LinkRow> &link_row_dataset_arg,
+void ProbeLinkMatcher::MatchProbes(std::vector<LinkRow> &link_row_dataset_arg,
                                    std::vector<ProbeRow> &probe_row_buffer_arg) {
   link_row_dataset = link_row_dataset_arg;
   probe_row_buffer = probe_row_buffer_arg;
-}
-
-void ProbeLinkMatcher::MatchProbes() {
   matched_probe_row_buffer.clear();
   matched_probe_row_buffer.resize(probe_row_buffer.size());
   std::pair<ProbeLinkMatchRow, int> match_result;
@@ -26,6 +26,7 @@ std::pair<ProbeLinkMatchRow,
   ProbeLinkMatchRow probe_row_matched;
   probe_row_matched.sampleID = probe_row.sampleID;
   probe_row_matched.dateTime = probe_row.dateTime;
+  probe_row_matched.dateTime_str.assign(probe_row.dateTime_str);
   probe_row_matched.sourceCode = probe_row.sourceCode;
   probe_row_matched.latitude = probe_row.latitude;
   probe_row_matched.longitude = probe_row.longitude;

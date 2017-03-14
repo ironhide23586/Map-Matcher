@@ -1,2 +1,7 @@
-﻿  MapMatcher.vcxproj -> D:\GoogleDrive\Academic\Grad School Stuff\4th Semester\CS 513 - Geospatial Vision & Visualization\HW2\MapMatcher\Debug\MapMatcher.exe
+﻿  ProbeLinkMatcher.cpp
+d:\googledrive\academic\grad school stuff\4th semester\cs 513 - geospatial vision & visualization\hw2\mapmatcher\mapmatcher\probelinkmatcher.cpp(16): warning C4018: '<': signed/unsigned mismatch
+d:\googledrive\academic\grad school stuff\4th semester\cs 513 - geospatial vision & visualization\hw2\mapmatcher\mapmatcher\probelinkmatcher.cpp(47): warning C4018: '>=': signed/unsigned mismatch
+d:\googledrive\academic\grad school stuff\4th semester\cs 513 - geospatial vision & visualization\hw2\mapmatcher\mapmatcher\probelinkmatcher.cpp(83): warning C4305: '/=': truncation from 'double' to 'float'
+d:\googledrive\academic\grad school stuff\4th semester\cs 513 - geospatial vision & visualization\hw2\mapmatcher\mapmatcher\probelinkmatcher.cpp(110): warning C4244: 'return': conversion from 'double' to 'float', possible loss of data
+  MapMatcher.vcxproj -> D:\GoogleDrive\Academic\Grad School Stuff\4th Semester\CS 513 - Geospatial Vision & Visualization\HW2\MapMatcher\Debug\MapMatcher.exe
   MapMatcher.vcxproj -> D:\GoogleDrive\Academic\Grad School Stuff\4th Semester\CS 513 - Geospatial Vision & Visualization\HW2\MapMatcher\Debug\MapMatcher.pdb (Full PDB)

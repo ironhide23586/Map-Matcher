@@ -24,7 +24,6 @@ std::pair<ProbeLinkMatchRow,
                                                 int prev_match_link_idx,
                                                 int link_row_window) {
   ProbeLinkMatchRow probe_row_matched;
-
   probe_row_matched.sampleID = probe_row.sampleID;
   probe_row_matched.dateTime = probe_row.dateTime;
   probe_row_matched.sourceCode = probe_row.sourceCode;
@@ -33,12 +32,10 @@ std::pair<ProbeLinkMatchRow,
   probe_row_matched.altitude = probe_row.altitude;
   probe_row_matched.speed = probe_row.speed;
   probe_row_matched.heading = probe_row.heading;
-
   int closest_link_idx = 0;
   float min_dist = Probe2LinkDistance(probe_row, link_row_dataset[0]);
   float curr_dist;
   int start_idx, end_idx, half_window = link_row_window / 2;
-
   if (prev_match_link_idx == -1) {
     start_idx = 1;
     end_idx = link_row_dataset.size();
@@ -50,7 +47,6 @@ std::pair<ProbeLinkMatchRow,
     end_idx = end_idx >= link_row_dataset.size() ? link_row_dataset.size()
       : end_idx;
   }
-
   for (int i = start_idx; i < end_idx; i++) {
     curr_dist = Probe2LinkDistance(probe_row, link_row_dataset[i]);
     if (curr_dist < min_dist) {
@@ -58,12 +54,16 @@ std::pair<ProbeLinkMatchRow,
       closest_link_idx = i;
     }
   }
-
+  ProbeLinkTriangle min_triangle = ExtractTrianglePoints(probe_row,
+                                                         link_row_dataset
+                                                         [closest_link_idx]);
+  float L0_P_dist = HaversineDistance(min_triangle.L0, min_triangle.P);
   probe_row_matched.linkPVID = link_row_dataset[closest_link_idx].linkPVID;
   probe_row_matched.direction = ProbeDirectionInLink(probe_row,
                                                      link_row_dataset
                                                      [closest_link_idx]);
-
+  probe_row_matched.distFromRef = sqrtf(powf(L0_P_dist, 2) - powf(min_dist, 2));
+  probe_row_matched.distFromLink = min_dist;
   return std::make_pair(probe_row_matched, closest_link_idx);
 }
 
@@ -71,17 +71,21 @@ char ProbeLinkMatcher::ProbeDirectionInLink(ProbeRow &probe_sample,
                                             LinkRow &link) {
   ProbeLinkTriangle probe_link_triangle = ExtractTrianglePoints(probe_sample,
                                                                 link);
-  std::pair<float, float> L0_P_vector = GetPoint2PointVector(probe_link_triangle.L0,
-                                                             probe_link_triangle.P);
-  float L0_P_vector_angle = std::acosf(VectorCosine(L0_P_vector,
-                                                     std::make_pair(0.0f,
-                                                                    1.0f)));
-  L0_P_vector_angle /= (M_PI / 180.0f);
-  L0_P_vector_angle = L0_P_vector_angle > 180
-    ? (L0_P_vector_angle - 360) : L0_P_vector_angle; //FIX THIS
-  float point_heading_angle = std::abs(probe_sample.heading 
-                                       - L0_P_vector_angle);
-  char direction = point_heading_angle > 90 ? 'T' : 'F';
+  char direction = 'F';
+  if (link.directionOfTravel != 'B')
+    direction = link.directionOfTravel;
+  else {
+    std::pair<float, float> L0_P_vector = GetPoint2PointVector(probe_link_triangle.L0,
+                                                               probe_link_triangle.P);
+    float L0_P_vector_angle = std::acosf(VectorCosine(L0_P_vector,
+                                                      std::make_pair(0.0f,
+                                                                     1.0f)));
+    L0_P_vector_angle /= (M_PI / 180.0f);
+    float point_heading_angle = std::abs(probe_sample.heading
+                                         - L0_P_vector_angle);
+    if (point_heading_angle > 90 && point_heading_angle <= 270)
+      direction = 'T';
+  }
   return direction;
 }
 

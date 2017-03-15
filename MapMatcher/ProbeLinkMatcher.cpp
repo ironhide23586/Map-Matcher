@@ -42,7 +42,8 @@ std::pair<ProbeLinkMatchRow,
   std::pair<int, int> start_end_idx;
   if (prev_match_link_idx == -1) {
     start_idx = 0;
-    end_idx = link_row_dataset.size();
+    //end_idx = link_row_dataset.size();
+    end_idx = link_row_window;
     start_end_idx = std::make_pair(start_idx, end_idx);
   }
   else {
@@ -212,6 +213,8 @@ float ProbeLinkMatcher::Probe2LinkDistance(ProbeRow &probe_sample,
   float L = HaversineDistance(probe_link_triangle.P, probe_link_triangle.L0);
   std::pair<float, float> L0_L1_vector
     = GetPoint2PointVector(probe_link_triangle.L0, probe_link_triangle.L1);
+  if (L0_L1_vector.first == 0 && L0_L1_vector.second == 0)
+    return FLT_MAX;
   std::pair<float, float> L0_P_vector
     = GetPoint2PointVector(probe_link_triangle.L0, probe_link_triangle.P);
   float cos_theta = VectorCosine(L0_L1_vector, L0_P_vector);
@@ -222,8 +225,9 @@ float ProbeLinkMatcher::Probe2LinkDistance(ProbeRow &probe_sample,
                      + powf((std::min(abs(std::min(L_cos_theta, link.length)),
                                       abs(std::max(0.0f, L_cos_theta)))
                              - L_cos_theta), 2));
-  if (!isfinite(dist))
+  if (!isfinite(dist)) {
     return 0.0f;
+  }
   return dist;
 }
 

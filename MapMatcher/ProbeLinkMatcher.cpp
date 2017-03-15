@@ -24,6 +24,7 @@ std::pair<ProbeLinkMatchRow,
                                                 int prev_match_link_idx,
                                                 int link_row_window) {
   ProbeLinkMatchRow probe_row_matched;
+  link_scan_window = link_row_window;
   probe_row_matched.sampleID = probe_row.sampleID;
   probe_row_matched.dateTime = probe_row.dateTime;
   probe_row_matched.dateTime_str.assign(probe_row.dateTime_str);
@@ -34,20 +35,64 @@ std::pair<ProbeLinkMatchRow,
   probe_row_matched.speed = probe_row.speed;
   probe_row_matched.heading = probe_row.heading;
   int closest_link_idx = 0;
-  float min_dist = Probe2LinkDistance(probe_row, link_row_dataset[0]);
+  float min_dist = FLT_MAX;
   float curr_dist;
   int start_idx, end_idx, half_window = link_row_window / 2;
+  std::pair<int, float> closest_idx_min_dist;
+  std::pair<int, int> start_end_idx;
   if (prev_match_link_idx == -1) {
-    start_idx = 1;
+    start_idx = 0;
     end_idx = link_row_dataset.size();
+    start_end_idx = std::make_pair(start_idx, end_idx);
   }
   else {
     start_idx = prev_match_link_idx - half_window;
     end_idx = prev_match_link_idx + half_window;
-    start_idx = start_idx < 0 ? 1 : start_idx;
-    end_idx = end_idx >= link_row_dataset.size() ? link_row_dataset.size()
-      : end_idx;
+    start_end_idx = ClipStartEndIndices(start_idx, end_idx);
   }
+  closest_idx_min_dist = FindClosestLinkDistIdx(probe_row, start_end_idx);
+  closest_link_idx = closest_idx_min_dist.first;
+  min_dist = closest_idx_min_dist.second;
+  ProbeLinkTriangle min_triangle = ExtractTrianglePoints(probe_row,
+                                                         link_row_dataset
+                                                         [closest_link_idx]);
+  float L0_P_dist = HaversineDistance(min_triangle.L0, min_triangle.P);
+
+  //ProbeLinkTriangle min_triangle1 = ExtractTrianglePoints(probe_row,
+  //                                                       link_row_dataset
+  //                                                       [closest_link_idx-1]);
+  //ProbeLinkTriangle min_triangle2 = ExtractTrianglePoints(probe_row,
+  //                                                        link_row_dataset
+  //                                                        [closest_link_idx + 1]);
+
+  probe_row_matched.linkPVID = link_row_dataset[closest_link_idx].linkPVID;
+
+  //float dc = Probe2LinkDistance(probe_row, link_row_dataset[closest_link_idx]);
+  //float dc1 = Probe2LinkDistance(probe_row, link_row_dataset[closest_link_idx-1]);
+  //float dc2 = Probe2LinkDistance(probe_row, link_row_dataset[closest_link_idx + 1]);
+
+  probe_row_matched.direction = ProbeDirectionInLink(probe_row,
+                                                     link_row_dataset
+                                                     [closest_link_idx]);
+  //float dc11 = Probe2LinkDistance(probe_row, link_row_dataset[closest_link_idx - 1]);
+  probe_row_matched.distFromRef = sqrtf(powf(L0_P_dist, 2) - powf(min_dist, 2));
+  probe_row_matched.distFromLink = min_dist;
+  return std::make_pair(probe_row_matched, closest_link_idx);
+}
+
+std::pair<int, float> ProbeLinkMatcher::FindClosestLinkDistIdx(ProbeRow &probe_row,
+                                                               std::pair<int, int>
+                                                               start_end_idx,
+                                                               float thres) {
+  int start_idx = start_end_idx.first, end_idx = start_end_idx.second;
+  if (end_idx <= start_idx) {
+    return std::make_pair(-1, -1);
+  }
+  std::pair<int, float> ans;
+  std::pair<int, int> start_end_idx_local;
+  int closest_link_idx = 0;
+  float min_dist = FLT_MAX;
+  float curr_dist;
   for (int i = start_idx; i < end_idx; i++) {
     curr_dist = Probe2LinkDistance(probe_row, link_row_dataset[i]);
     if (curr_dist < min_dist) {
@@ -55,17 +100,58 @@ std::pair<ProbeLinkMatchRow,
       closest_link_idx = i;
     }
   }
-  ProbeLinkTriangle min_triangle = ExtractTrianglePoints(probe_row,
-                                                         link_row_dataset
-                                                         [closest_link_idx]);
-  float L0_P_dist = HaversineDistance(min_triangle.L0, min_triangle.P);
-  probe_row_matched.linkPVID = link_row_dataset[closest_link_idx].linkPVID;
-  probe_row_matched.direction = ProbeDirectionInLink(probe_row,
-                                                     link_row_dataset
-                                                     [closest_link_idx]);
-  probe_row_matched.distFromRef = sqrtf(powf(L0_P_dist, 2) - powf(min_dist, 2));
-  probe_row_matched.distFromLink = min_dist;
-  return std::make_pair(probe_row_matched, closest_link_idx);
+  int start_idx_local, end_idx_local, step = 1;
+  bool upper_done = false, lower_done = false;
+  while (min_dist > thres) {
+    start_idx_local = start_idx - (step * link_scan_window);
+    end_idx_local = start_idx - ((step - 1) * link_scan_window);
+    start_end_idx_local = ClipStartEndIndices(start_idx_local,
+                                              end_idx_local);
+    start_idx_local = start_end_idx_local.first;
+    end_idx_local = start_end_idx_local.second;
+    upper_done = end_idx_local == 0 ? true : false;
+    for (int i = start_idx_local; i < end_idx_local; i++) {
+      curr_dist = Probe2LinkDistance(probe_row, link_row_dataset[i]);
+      if (curr_dist < min_dist) {
+        min_dist = curr_dist;
+        closest_link_idx = i;
+      }
+    }
+    if (min_dist < thres)
+      break;
+    start_idx_local = end_idx + ((step - 1) * link_scan_window);
+    end_idx_local = end_idx + (step * link_scan_window);
+    start_end_idx_local = ClipStartEndIndices(start_idx_local,
+                                              end_idx_local);
+    start_idx_local = start_end_idx_local.first;
+    end_idx_local = start_end_idx_local.second;
+    lower_done = end_idx_local == link_row_dataset.size() ? true : false;
+    for (int i = start_idx_local; i < end_idx_local; i++) {
+      curr_dist = Probe2LinkDistance(probe_row, link_row_dataset[i]);
+      if (curr_dist < min_dist) {
+        min_dist = curr_dist;
+        closest_link_idx = i;
+      }
+    }
+    if (upper_done && lower_done)
+      break;
+    step++;
+  }
+  ans = std::make_pair(closest_link_idx, min_dist);
+  return ans;
+}
+
+std::pair<int, int> ProbeLinkMatcher::ClipStartEndIndices(int start_idx, int end_idx) {
+  int start_idx_clipped = start_idx, end_idx_clipped = end_idx;
+  if (start_idx < 0)
+    start_idx_clipped = 0;
+  else if (start_idx_clipped >= link_row_dataset.size())
+    start_idx_clipped = link_row_dataset.size() - 1;
+  if (end_idx < 0)
+    end_idx_clipped = 0;
+  else if (end_idx >= link_row_dataset.size())
+    end_idx_clipped = link_row_dataset.size();
+  return std::make_pair(start_idx_clipped, end_idx_clipped);
 }
 
 char ProbeLinkMatcher::ProbeDirectionInLink(ProbeRow &probe_sample,
@@ -131,10 +217,13 @@ float ProbeLinkMatcher::Probe2LinkDistance(ProbeRow &probe_sample,
   float cos_theta = VectorCosine(L0_L1_vector, L0_P_vector);
   float sin_sqr_theta = 1.0f - powf(cos_theta, 2);
   float L_cos_theta = L * cos_theta;
+  
   float dist = sqrtf(L * L * sin_sqr_theta
                      + powf((std::min(abs(std::min(L_cos_theta, link.length)),
                                       abs(std::max(0.0f, L_cos_theta)))
                              - L_cos_theta), 2));
+  if (!isfinite(dist))
+    return 0.0f;
   return dist;
 }
 

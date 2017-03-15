@@ -7,6 +7,7 @@ public:
   std::vector<LinkRow> link_row_dataset;
   std::vector<ProbeRow> probe_row_buffer;
   std::vector<ProbeLinkMatchRow> matched_probe_row_buffer;
+  int link_scan_window;
 
   void MatchProbes(std::vector<LinkRow> &link_row_dataset_arg,
                    std::vector<ProbeRow> &probe_row_buffer_arg);
@@ -24,5 +25,9 @@ public:
   float VectorCosine(std::pair<float, float> &v0, std::pair<float, float> &v1);
   ProbeLinkTriangle ExtractTrianglePoints(ProbeRow &probe_sample,
                                           LinkRow &link);
+  std::pair<int, int> ClipStartEndIndices(int start_idx, int end_idx);
+  std::pair<int, float> FindClosestLinkDistIdx(ProbeRow &probe_row,
+                                               std::pair<int, int> start_end_idx,
+                                               float thres = 30.0f);
 };
 

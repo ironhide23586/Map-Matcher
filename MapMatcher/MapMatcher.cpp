@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <iostream>
+#include <string>
 
 #include "CSVReader.h"
 #include "CSVWriter.h"
@@ -16,14 +17,20 @@ int main() {
   CSVReader *probe_data_reader = new CSVReader("Partition6467ProbePoints.csv",
                                                PROBE_MATCH_PROCESSING_BATCH_SIZE);
   CSVWriter *matched_probe_data_writer = new CSVWriter("Partition6467MatchedPoints.csv");
+  ProbeLinkMatcher *probe_matcher = new ProbeLinkMatcher();
   
   std::cout << "Loading Link Data File..." << std::endl;
   link_data_reader->PopulateReadBuffer(); // Takes 3 mins with full link data file
-  std::cout << "Link Data file Loaded!\n" << std::endl;
+  std::cout << "Link Data file Loaded! Read in " << link_data_reader->read_rows
+    << " rows \n" << std::endl;
   std::cout << "Parsing Link Data file..." << std::endl;
   link_data_reader->ParseToLinkRowBuffer();
-  std::cout << "Link Data file parsed!\n" << std::endl;
-  ProbeLinkMatcher *probe_matcher = new ProbeLinkMatcher();
+  std::cout << "Link Data file parsed! Successfully parsed in "
+    << link_data_reader->parsed_rows << " rows \n" << std::endl;
+
+  std::cout << "Press Enter to begin the map-matching process!!" << std::endl;
+  getchar();
+
   int matched_probes = 0, start_idx = 0, read_rows, end_idx = 0;
   std::cout << "Beginning map-matching process..." << std::endl;
   while (!probe_data_reader->end_reached) {

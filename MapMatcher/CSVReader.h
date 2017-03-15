@@ -16,6 +16,9 @@ public:
   int row_buffer_size;
   bool end_reached;
 
+  int read_rows;
+  int parsed_rows;
+
   CSVReader(const char *filename_arg, int buff_size = 5);
   
   void PopulateReadBuffer();

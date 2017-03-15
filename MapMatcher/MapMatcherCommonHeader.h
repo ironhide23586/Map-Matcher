@@ -12,6 +12,7 @@
 #include <math.h>
 #include <algorithm>
 #include <iostream>
+#include <cfloat>
 
 struct LinkRow {
   unsigned int linkPVID;

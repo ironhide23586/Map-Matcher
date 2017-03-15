@@ -17,6 +17,8 @@ CSVReader::CSVReader(const char *filename_arg, int buff_size) {
   csv_fstream.open(filename);
   global_row_idx = 0;
   local_row_idx = 0;
+  read_rows = 0;
+  parsed_rows = 0;
   row_buffer_size = buff_size;
   end_reached = false;
 }
@@ -127,7 +129,8 @@ void CSVReader::PopulateReadBuffer() {
   row_string_buffer.clear();
   raw_row_buffer.resize(row_buffer_size);
   row_string_buffer.resize(row_buffer_size);
-  for (int i = 0; i < row_buffer_size; i++) {
+  int i;
+  for (i = 0; i < row_buffer_size; i++) {
     if (!ReadNextRow()) {
       row_buffer_size = i;
       raw_row_buffer.resize(row_buffer_size);
@@ -136,23 +139,27 @@ void CSVReader::PopulateReadBuffer() {
       break;
     }
   }
+  read_rows = i;
 }
 
 void CSVReader::ParseToLinkRowBuffer() {
   link_row_buffer.clear();
   link_row_buffer.resize(row_buffer_size);
-#pragma omp parallel
-  for (int i = 0; i < row_buffer_size; i++) {
+  int i;
+  for (i = 0; i < row_buffer_size; i++) {
     link_row_buffer[i] = row_string_buff2LinkRow(row_string_buffer[i]);
   }
+  parsed_rows = i;
 }
 
 void CSVReader::ParseToProbeRowBuffer() {
   probe_row_buffer.clear();
   probe_row_buffer.resize(row_buffer_size);
-  for (int i = 0; i < row_buffer_size; i++) {
+  int i;
+  for (i = 0; i < row_buffer_size; i++) {
     probe_row_buffer[i] = row_string_buff2ProbeRow(row_string_buffer[i]);
   }
+  parsed_rows = i;
 }
 
 void CSVReader::split_(const std::string &s, char delim,

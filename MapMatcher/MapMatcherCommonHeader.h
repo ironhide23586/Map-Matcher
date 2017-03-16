@@ -13,6 +13,7 @@
 #include <algorithm>
 #include <iostream>
 #include <cfloat>
+#include <unordered_map>
 
 struct LinkRow {
   unsigned int linkPVID;
@@ -66,4 +67,16 @@ struct ProbeLinkTriangle {
   std::pair<float, float> L0; //Reference node
   std::pair<float, float> L1; //Non-reference node
   std::pair<float, float> P; //Probe Point
+};
+
+struct LinkPoint {
+  float altitude;
+  float distFromRef;
+  float distFromLink;
+};
+
+struct SlopeCompare {
+  float link_slope;
+  float probe_slope;
+  float slope_diff;
 };

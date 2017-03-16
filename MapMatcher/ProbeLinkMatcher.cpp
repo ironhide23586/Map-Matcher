@@ -225,7 +225,7 @@ float ProbeLinkMatcher::Probe2LinkDistance(ProbeRow &probe_sample,
                      + powf((std::min(abs(std::min(L_cos_theta, link.length)),
                                       abs(std::max(0.0f, L_cos_theta)))
                              - L_cos_theta), 2));
-  if (!isfinite(dist)) {
+  if (!std::isfinite(dist)) {
     return 0.0f;
   }
   return dist;

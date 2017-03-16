@@ -124,6 +124,15 @@ ProbeRow CSVReader::row_string_buff2ProbeRow(std::vector<std::string>
   return row;
 }
 
+//std::pair<int, 
+//  LinkPoint> row_string_buff2MatchedProbesRow(std::vector<std::string>
+//                                              &row_string_set) {
+//  int linkPVID = 0;
+//  LinkPoint link_point;
+//
+//  return std::make_pair(linkPVID, link_point);
+//}
+
 void CSVReader::PopulateReadBuffer() {
   raw_row_buffer.clear();
   row_string_buffer.clear();
@@ -158,6 +167,20 @@ void CSVReader::ParseToProbeRowBuffer() {
   int i;
   for (i = 0; i < row_buffer_size; i++) {
     probe_row_buffer[i] = row_string_buff2ProbeRow(row_string_buffer[i]);
+  }
+  parsed_rows = i;
+}
+
+void CSVReader::ParseToMatchedProbesBuffer() {
+  int i;
+  int linkPVID;
+  LinkPoint link_point;
+  for (i = 0; i < row_buffer_size; i++) {
+    linkPVID = stoi(row_string_buffer[i][8]);
+    link_point.altitude = stod(row_string_buffer[i][5]);
+    link_point.distFromRef = stod(row_string_buffer[i][10]);
+    link_point.distFromLink = stod(row_string_buffer[i][11]);
+    matched_probes_buffer[linkPVID].push_back(link_point);
   }
   parsed_rows = i;
 }

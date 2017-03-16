@@ -150,6 +150,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="CSVWriter.cpp" />
+    <ClCompile Include="LinkSlopeFromProbesFinder.cpp" />
     <ClCompile Include="MapMatcher.cpp" />
     <ClCompile Include="CSVReader.cpp" />
     <ClCompile Include="ProbeLinkMatcher.cpp" />
@@ -157,6 +158,7 @@
   <ItemGroup>
     <ClInclude Include="CSVReader.h" />
     <ClInclude Include="CSVWriter.h" />
+    <ClInclude Include="LinkSlopeFromProbesFinder.h" />
     <ClInclude Include="MapMatcherCommonHeader.h" />
     <ClInclude Include="ProbeLinkMatcher.h" />
   </ItemGroup>

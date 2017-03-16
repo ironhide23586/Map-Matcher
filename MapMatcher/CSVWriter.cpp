@@ -83,4 +83,3 @@ std::string CSVWriter::ConstructMatchedProbeCSVRowString(ProbeLinkMatchRow
   row_str.append("\n");
   return row_str;
 }
-

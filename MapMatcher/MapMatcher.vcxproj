@@ -151,7 +151,7 @@
   <ItemGroup>
     <ClCompile Include="CSVWriter.cpp" />
     <ClCompile Include="LinkSlopeFromProbesFinder.cpp" />
-    <ClCompile Include="MapMatcher.cpp" />
+    <ClCompile Include="main.cpp" />
     <ClCompile Include="CSVReader.cpp" />
     <ClCompile Include="ProbeLinkMatcher.cpp" />
   </ItemGroup>

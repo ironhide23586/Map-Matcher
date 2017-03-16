@@ -42,7 +42,6 @@ std::pair<ProbeLinkMatchRow,
   std::pair<int, int> start_end_idx;
   if (prev_match_link_idx == -1) {
     start_idx = 0;
-    //end_idx = link_row_dataset.size();
     end_idx = link_row_window;
     start_end_idx = std::make_pair(start_idx, end_idx);
   }
@@ -58,24 +57,10 @@ std::pair<ProbeLinkMatchRow,
                                                          link_row_dataset
                                                          [closest_link_idx]);
   float L0_P_dist = HaversineDistance(min_triangle.L0, min_triangle.P);
-
-  //ProbeLinkTriangle min_triangle1 = ExtractTrianglePoints(probe_row,
-  //                                                       link_row_dataset
-  //                                                       [closest_link_idx-1]);
-  //ProbeLinkTriangle min_triangle2 = ExtractTrianglePoints(probe_row,
-  //                                                        link_row_dataset
-  //                                                        [closest_link_idx + 1]);
-
   probe_row_matched.linkPVID = link_row_dataset[closest_link_idx].linkPVID;
-
-  //float dc = Probe2LinkDistance(probe_row, link_row_dataset[closest_link_idx]);
-  //float dc1 = Probe2LinkDistance(probe_row, link_row_dataset[closest_link_idx-1]);
-  //float dc2 = Probe2LinkDistance(probe_row, link_row_dataset[closest_link_idx + 1]);
-
   probe_row_matched.direction = ProbeDirectionInLink(probe_row,
                                                      link_row_dataset
                                                      [closest_link_idx]);
-  //float dc11 = Probe2LinkDistance(probe_row, link_row_dataset[closest_link_idx - 1]);
   probe_row_matched.distFromRef = sqrtf(powf(L0_P_dist, 2) - powf(min_dist, 2));
   probe_row_matched.distFromLink = min_dist;
   return std::make_pair(probe_row_matched, closest_link_idx);

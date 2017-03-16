@@ -124,15 +124,6 @@ ProbeRow CSVReader::row_string_buff2ProbeRow(std::vector<std::string>
   return row;
 }
 
-//std::pair<int, 
-//  LinkPoint> row_string_buff2MatchedProbesRow(std::vector<std::string>
-//                                              &row_string_set) {
-//  int linkPVID = 0;
-//  LinkPoint link_point;
-//
-//  return std::make_pair(linkPVID, link_point);
-//}
-
 void CSVReader::PopulateReadBuffer() {
   raw_row_buffer.clear();
   row_string_buffer.clear();

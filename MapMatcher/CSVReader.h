@@ -39,7 +39,5 @@ private:
                                   &row_string_set);
   ProbeRow row_string_buff2ProbeRow(std::vector<std::string>
                                     &row_string_set);
-  //std::pair<int, LinkPoint> row_string_buff2MatchedProbesRow(std::vector<std::string>
-  //                                                           &row_string_set);
 };
 

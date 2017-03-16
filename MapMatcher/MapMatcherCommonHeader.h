@@ -76,7 +76,7 @@ struct LinkPoint {
 };
 
 struct SlopeCompare {
-  float link_slope;
-  float probe_slope;
+  float link_slope; //degrees
+  float probe_slope; //degrees
   float slope_diff;
 };
